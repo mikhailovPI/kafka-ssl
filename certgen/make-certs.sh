@@ -21,7 +21,6 @@ CA_DAYS="${CA_DAYS:-3650}"
 KEY_SIZE="${KEY_SIZE:-2048}"
 CERT_DAYS="${CERT_DAYS:-1825}"
 
-# Extra SANs (comma-separated). They are appended to CN + localhost defaults.
 EXTRA_SAN_DNS="${EXTRA_SAN_DNS:-host.docker.internal}"
 EXTRA_SAN_IP="${EXTRA_SAN_IP:-}"  # e.g. "10.0.2.2,192.168.1.100"
 
@@ -32,19 +31,16 @@ err() { echo "[ERROR] $*" >&2; }
 
 mkdir -p "${OUT_DIR}/ca" "${OUT_DIR}/brokers" "${OUT_DIR}/clients"
 
-# Build a temporary OpenSSL req config with SANs
 mk_san_cfg() {
   local cn="$1"
   local file="$2"
 
-  # Compose SAN DNS entries: CN + localhost + extra DNS
   local dns_list=("${cn}" "localhost")
   if [[ -n "${EXTRA_SAN_DNS}" ]]; then
     IFS=',' read -ra _dns <<< "${EXTRA_SAN_DNS}"
     dns_list+=("${_dns[@]}")
   fi
 
-  # Compose SAN IP entries: always 127.0.0.1 + extra IPs (if any)
   local ip_list=("127.0.0.1")
   if [[ -n "${EXTRA_SAN_IP}" ]]; then
     IFS=',' read -ra _ips <<< "${EXTRA_SAN_IP}"
@@ -77,13 +73,11 @@ subjectAltName        = @alt_names
 
 [ alt_names ]
 EOF
-    # Enumerate DNS.* lines
     local idx=1
     for d in "${dns_list[@]}"; do
       echo "DNS.${idx} = ${d}"
       idx=$((idx+1))
     done
-    # Enumerate IP.* lines
     idx=1
     for ip in "${ip_list[@]}"; do
       echo "IP.${idx} = ${ip}"
@@ -105,7 +99,6 @@ else
   log "Root CA already exists, skipping."
 fi
 
-# Ensure .srl exists for stable CA signing serials
 if [[ ! -f "${OUT_DIR}/ca/ca.srl" ]]; then
   echo "01" > "${OUT_DIR}/ca/ca.srl"
 fi

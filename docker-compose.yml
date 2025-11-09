@@ -50,7 +50,7 @@ services:
       - secrets-broker-1:/secrets
       - kafka-1-data:/var/lib/kafka/data
       - ./clients:/clients:ro
-      - ./init:/init:ro            # <-- скрипты теперь запускаем отсюда вручную на kafka-1
+      - ./init:/init:ro
     restart: unless-stopped
     networks: [knet]
 

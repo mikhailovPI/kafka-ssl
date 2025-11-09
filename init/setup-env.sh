@@ -13,7 +13,6 @@ kafka-acls --bootstrap-server "$BOOT" --command-config "$ADMIN" \
   --add --allow-principal User:client-consumer --cluster \
   --operation Describe
 
-# чтобы негативный тест падал по правам на ТОПИК, а не по группе
 for G in cg-check-1 cg-negative; do
   kafka-acls --bootstrap-server "$BOOT" --command-config "$ADMIN" \
     --add --allow-principal User:client-consumer --group "$G" --operation Read
